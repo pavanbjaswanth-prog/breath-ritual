@@ -1,0 +1,959 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0d3b3a" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Breath Ritual</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon-192.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4efe3;
+      --surface: #fffaf0;
+      --surface-2: #e9e2d3;
+      --text: #163837;
+      --muted: #5d7773;
+      --teal: #0d3b3a;
+      --teal-2: #155452;
+      --gold: #c89a4b;
+      --gold-strong: #a97727;
+      --danger: #9d423e;
+      --line: rgba(13,59,58,.14);
+      --shadow: 0 16px 42px rgba(18, 55, 51, .12);
+      --orb-core: rgba(200,154,75,.96);
+      --orb-halo: rgba(200,154,75,.18);
+      --focus: 0 0 0 3px rgba(200,154,75,.34);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #082d2c;
+        --surface: #0d3b3a;
+        --surface-2: #124846;
+        --text: #fff4df;
+        --muted: #bdd0c9;
+        --teal: #062523;
+        --teal-2: #0f4b48;
+        --gold: #e0b768;
+        --gold-strong: #f1ca7d;
+        --danger: #ec8d83;
+        --line: rgba(255,244,223,.14);
+        --shadow: 0 18px 50px rgba(0,0,0,.28);
+        --orb-core: rgba(224,183,104,.97);
+        --orb-halo: rgba(224,183,104,.16);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--bg); }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(200,154,75,.12), transparent 28rem),
+        linear-gradient(180deg, color-mix(in srgb, var(--bg) 88%, var(--teal) 12%), var(--bg));
+      font: 16px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button, input, select { font: inherit; }
+    button, select, input { min-height: 48px; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, select:focus-visible { outline: none; box-shadow: var(--focus); }
+
+    .app {
+      width: min(100%, 780px);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(30px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand h1, .completion h2 {
+      font-family: Fraunces, Georgia, serif;
+      margin: 0;
+      font-size: clamp(2rem, 7vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -.03em;
+    }
+
+    .brand p { margin: 8px 0 0; color: var(--muted); max-width: 36rem; }
+    .eyebrow { color: var(--gold-strong); text-transform: uppercase; letter-spacing: .12em; font-weight: 750; font-size: .73rem; }
+
+    .panel, .practice-card {
+      border: 1px solid var(--line);
+      background: color-mix(in srgb, var(--surface) 96%, transparent);
+      box-shadow: var(--shadow);
+      border-radius: 24px;
+    }
+
+    .panel { padding: 18px; margin-bottom: 16px; }
+    .settings-grid { display: grid; gap: 14px; grid-template-columns: 1fr; }
+    .field > label, .field-label { display: block; font-weight: 750; margin-bottom: 8px; }
+    .hint { color: var(--muted); font-size: .86rem; margin-top: 5px; }
+
+    select, input[type="text"] {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--text);
+      padding: 0 13px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 24px 2px 12px;
+    }
+    .section-head h2 { font-family: Fraunces, Georgia, serif; margin: 0; font-size: 1.55rem; }
+    .section-head p { margin: 3px 0 0; color: var(--muted); font-size: .9rem; }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      padding: 0 16px;
+      color: var(--text);
+      background: var(--surface);
+      font-weight: 750;
+    }
+    .btn.primary { background: var(--gold); border-color: transparent; color: #17302e; }
+    .btn.ghost { background: transparent; }
+    .btn.danger { color: var(--danger); }
+    .btn.icon { width: 48px; padding: 0; display: grid; place-items: center; font-size: 1.15rem; }
+    .btn:disabled { opacity: .38; cursor: default; }
+
+    .practice-list { display: grid; gap: 14px; }
+    .practice-card { padding: 16px; }
+    .practice-top { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .practice-actions { display: flex; gap: 7px; }
+    .practice-name { font-family: Fraunces, Georgia, serif; font-size: 1.13rem; font-weight: 650; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .metric {
+      display: grid;
+      gap: 7px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      padding: 10px;
+      background: color-mix(in srgb, var(--surface-2) 72%, transparent);
+    }
+    .metric-name { color: var(--muted); font-size: .8rem; font-weight: 700; line-height: 1.2; }
+    .stepper { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; gap: 4px; }
+    .stepper button { min-height: 44px; border-radius: 12px; border: 0; background: var(--surface); color: var(--text); font-weight: 900; font-size: 1.2rem; }
+    .stepper output { text-align: center; font-variant-numeric: tabular-nums; font-weight: 800; white-space: nowrap; }
+
+    .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 14px; min-height: 48px; }
+    .toggle-row span { font-weight: 700; }
+    .switch { position: relative; width: 54px; height: 32px; flex: 0 0 auto; }
+    .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+    .switch i { position: absolute; inset: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; transition: .2s ease; }
+    .switch i::after { content: ""; position: absolute; width: 24px; height: 24px; top: 3px; left: 3px; border-radius: 50%; background: var(--muted); transition: .2s ease; }
+    .switch input:checked + i { background: color-mix(in srgb, var(--gold) 30%, var(--surface-2)); }
+    .switch input:checked + i::after { transform: translateX(22px); background: var(--gold-strong); }
+    .switch input:focus-visible + i { box-shadow: var(--focus); }
+
+    .card-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+    .card-time { color: var(--muted); font-size: .88rem; }
+
+    .routine-summary {
+      position: sticky;
+      bottom: 0;
+      z-index: 5;
+      margin: 18px -4px 0;
+      padding: 12px;
+      border-radius: 20px;
+      background: color-mix(in srgb, var(--teal) 92%, transparent);
+      color: #fff4df;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 36px rgba(0,0,0,.2);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+    .routine-summary small { display: block; color: rgba(255,244,223,.72); }
+    .routine-summary strong { font-family: Fraunces, Georgia, serif; font-size: 1.35rem; }
+
+    .player {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      overflow: auto;
+      background:
+        radial-gradient(circle at 50% 33%, rgba(224,183,104,.12), transparent 34rem),
+        #062c2b;
+      color: #fff4df;
+      padding: max(18px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+    }
+    .player.active { display: grid; }
+    .player-shell { width: min(100%, 720px); margin: auto; min-height: calc(100dvh - 38px); display: grid; grid-template-rows: auto 1fr auto; gap: 16px; }
+    .player-head { text-align: center; }
+    .player-head .practice-progress { color: rgba(255,244,223,.72); font-size: .88rem; }
+    .phase-label { font-family: Fraunces, Georgia, serif; font-size: clamp(1.8rem, 8vw, 3.1rem); margin: 7px 0 0; }
+
+    .orb-zone { display: grid; place-items: center; min-height: 42vh; }
+    .orb-wrap { position: relative; width: min(58vw, 270px); aspect-ratio: 1; display: grid; place-items: center; }
+    .orb-halo { position: absolute; width: 100%; height: 100%; border-radius: 50%; background: var(--orb-halo); filter: blur(12px); transform: scale(var(--orb-scale, .76)); transition: transform .08s linear; }
+    .orb { width: 72%; height: 72%; border-radius: 50%; background: radial-gradient(circle at 35% 28%, #f8dc9b, var(--orb-core) 55%, #9c6a26 100%); box-shadow: 0 20px 70px rgba(0,0,0,.36), inset 0 0 26px rgba(255,255,255,.23); transform: scale(var(--orb-scale, .76)); transition: transform .08s linear; }
+    .countdown { position: absolute; font-size: clamp(2.8rem, 15vw, 5rem); font-weight: 780; font-variant-numeric: tabular-nums; letter-spacing: -.04em; color: #17302e; text-shadow: 0 1px 0 rgba(255,255,255,.22); }
+
+    .progress-meta { display: grid; gap: 7px; text-align: center; color: rgba(255,244,223,.72); min-height: 52px; }
+    .progress-meta strong { color: #fff4df; }
+    .next-practice { color: #e0b768; }
+    .player-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
+    .player-controls .btn { color: #fff4df; background: rgba(255,255,255,.07); border-color: rgba(255,244,223,.16); }
+    .player-controls .btn.primary { color: #17302e; background: #e0b768; }
+
+    .completion {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 120;
+      place-items: center;
+      text-align: center;
+      padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+      background: #062c2b;
+      color: #fff4df;
+    }
+    .completion.active { display: grid; }
+    .completion-inner { width: min(100%, 500px); }
+    .completion .mark { font-size: 4rem; margin-bottom: 12px; }
+    .completion p { color: rgba(255,244,223,.74); }
+    .completion-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+
+    .notice { padding: 12px 14px; background: color-mix(in srgb, var(--gold) 12%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 36%, var(--line)); border-radius: 15px; color: var(--muted); font-size: .88rem; margin-bottom: 15px; }
+
+    @media (min-width: 620px) {
+      .settings-grid { grid-template-columns: 1fr 1fr; }
+      .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+      .orb, .orb-halo { transition: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" id="editorScreen">
+    <div class="topbar">
+      <div class="brand">
+        <div class="eyebrow">Custom pranayama</div>
+        <h1>Breath Ritual</h1>
+        <p>Build a quiet sequence, then let the rhythm guide you practice by practice.</p>
+      </div>
+    </div>
+
+    <div class="notice">Breathwork can feel intense. Stop if you feel dizzy, faint, painful, or unwell, and avoid forceful breath-holding where it is medically unsuitable for you.</div>
+
+    <section class="panel" aria-label="Routine settings">
+      <div class="settings-grid">
+        <div class="field">
+          <span class="field-label">Rest between practices</span>
+          <div class="stepper" data-global-stepper="rest">
+            <button type="button" data-dir="-1" aria-label="Decrease rest">−</button>
+            <output id="restOutput">0 s</output>
+            <button type="button" data-dir="1" aria-label="Increase rest">+</button>
+          </div>
+          <div class="hint">0–300 seconds</div>
+        </div>
+        <div class="field">
+          <label for="soundMode">Sound</label>
+          <select id="soundMode">
+            <option value="tones">Gentle tones</option>
+            <option value="chimes">Soft chimes</option>
+            <option value="off">Off (vibration only)</option>
+          </select>
+          <div class="hint">Generated live with Web Audio — no audio files.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <div>
+        <h2>Your ritual</h2>
+        <p id="practiceCount"></p>
+      </div>
+      <button class="btn" type="button" id="addPractice">+ Add</button>
+    </div>
+
+    <section class="practice-list" id="practiceList" aria-live="polite"></section>
+
+    <div class="routine-summary">
+      <div><small>Total routine time</small><strong id="totalTime">0:00</strong></div>
+      <button class="btn primary" type="button" id="startRoutine">Begin</button>
+    </div>
+  </main>
+
+  <section class="player" id="playerScreen" aria-hidden="true">
+    <div class="player-shell">
+      <header class="player-head">
+        <div class="practice-progress" id="practiceProgress"></div>
+        <div class="phase-label" id="phaseLabel">Inhale</div>
+      </header>
+
+      <div>
+        <div class="orb-zone">
+          <div class="orb-wrap" id="orbWrap">
+            <div class="orb-halo"></div>
+            <div class="orb"></div>
+            <div class="countdown" id="countdown">4.0</div>
+          </div>
+        </div>
+        <div class="progress-meta">
+          <div id="cycleProgress"></div>
+          <div class="next-practice" id="nextPractice"></div>
+        </div>
+      </div>
+
+      <footer class="player-controls">
+        <button class="btn primary" type="button" id="pauseResume">Pause</button>
+        <button class="btn" type="button" id="skipPractice">Skip practice</button>
+        <button class="btn" type="button" id="endRoutine">End</button>
+      </footer>
+    </div>
+  </section>
+
+  <section class="completion" id="completionScreen" aria-hidden="true">
+    <div class="completion-inner">
+      <div class="mark">◌</div>
+      <div class="eyebrow">Ritual complete</div>
+      <h2>Return gently.</h2>
+      <p id="completionSummary"></p>
+      <div class="completion-actions">
+        <button class="btn primary" type="button" id="againBtn">Again</button>
+        <button class="btn" type="button" id="backBtn">Edit routine</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+  (() => {
+    'use strict';
+
+    const STORAGE_KEY = 'breathRitual.v1';
+    const DURATION_STEP = 0.5;
+    const defaultState = {
+      rest: 10,
+      sound: 'tones',
+      practices: [
+        { name: 'Bhastrika', inhale: 1, holdIn: 0, exhale: 1, holdOut: 0, cycles: 30, finalHold: 15, alternate: false },
+        { name: 'Tummo', inhale: 2, holdIn: 0, exhale: 2, holdOut: 0, cycles: 30, finalHold: 15, alternate: false },
+        { name: 'Box breathing', inhale: 4, holdIn: 4, exhale: 4, holdOut: 4, cycles: 7, finalHold: 0, alternate: false },
+        { name: 'Alternate nostril', inhale: 4, holdIn: 4, exhale: 4, holdOut: 0, cycles: 10, finalHold: 0, alternate: true },
+        { name: 'Om chant', inhale: 4, holdIn: 0, exhale: 12, holdOut: 0, cycles: 3, finalHold: 0, alternate: false }
+      ]
+    };
+
+    const els = {
+      practiceList: document.getElementById('practiceList'),
+      practiceCount: document.getElementById('practiceCount'),
+      totalTime: document.getElementById('totalTime'),
+      restOutput: document.getElementById('restOutput'),
+      soundMode: document.getElementById('soundMode'),
+      addPractice: document.getElementById('addPractice'),
+      startRoutine: document.getElementById('startRoutine'),
+      playerScreen: document.getElementById('playerScreen'),
+      practiceProgress: document.getElementById('practiceProgress'),
+      phaseLabel: document.getElementById('phaseLabel'),
+      countdown: document.getElementById('countdown'),
+      orbWrap: document.getElementById('orbWrap'),
+      cycleProgress: document.getElementById('cycleProgress'),
+      nextPractice: document.getElementById('nextPractice'),
+      pauseResume: document.getElementById('pauseResume'),
+      skipPractice: document.getElementById('skipPractice'),
+      endRoutine: document.getElementById('endRoutine'),
+      completionScreen: document.getElementById('completionScreen'),
+      completionSummary: document.getElementById('completionSummary'),
+      againBtn: document.getElementById('againBtn'),
+      backBtn: document.getElementById('backBtn')
+    };
+
+    function cloneDefault() {
+      return JSON.parse(JSON.stringify(defaultState));
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return fallback;
+      return Math.min(max, Math.max(min, n));
+    }
+
+    function snap(value, step) {
+      return Math.round(value / step) * step;
+    }
+
+    function sanitizePractice(p, i) {
+      const base = defaultState.practices[i] || { name: 'New practice', inhale: 4, holdIn: 0, exhale: 4, holdOut: 0, cycles: 5, finalHold: 0, alternate: false };
+      return {
+        name: String(p?.name || base.name || 'Practice').slice(0, 60),
+        inhale: snap(clampNumber(p?.inhale, 0, 300, base.inhale), DURATION_STEP),
+        holdIn: snap(clampNumber(p?.holdIn, 0, 300, base.holdIn), DURATION_STEP),
+        exhale: snap(clampNumber(p?.exhale, 0, 300, base.exhale), DURATION_STEP),
+        holdOut: snap(clampNumber(p?.holdOut, 0, 300, base.holdOut), DURATION_STEP),
+        cycles: Math.round(clampNumber(p?.cycles, 1, 999, base.cycles)),
+        finalHold: snap(clampNumber(p?.finalHold, 0, 600, base.finalHold), DURATION_STEP),
+        alternate: Boolean(p?.alternate)
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return cloneDefault();
+        const parsed = JSON.parse(raw);
+        return {
+          rest: snap(clampNumber(parsed?.rest, 0, 300, defaultState.rest), DURATION_STEP),
+          sound: ['tones', 'chimes', 'off'].includes(parsed?.sound) ? parsed.sound : defaultState.sound,
+          practices: Array.isArray(parsed?.practices) && parsed.practices.length
+            ? parsed.practices.slice(0, 50).map(sanitizePractice)
+            : cloneDefault().practices
+        };
+      } catch (err) {
+        console.warn('Could not load saved ritual.', err);
+        return cloneDefault();
+      }
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn('Could not save ritual.', err);
+      }
+    }
+
+    let state = loadState();
+
+    function practiceSeconds(p) {
+      return p.cycles * (p.inhale + p.holdIn + p.exhale + p.holdOut) + p.finalHold;
+    }
+
+    function totalSeconds() {
+      const practices = state.practices.reduce((sum, p) => sum + practiceSeconds(p), 0);
+      const rests = Math.max(0, state.practices.length - 1) * state.rest;
+      return practices + rests;
+    }
+
+    function formatClock(sec) {
+      sec = Math.max(0, Math.round(sec));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      return h ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+    }
+
+    function formatSeconds(sec) {
+      return Number.isInteger(sec) ? `${sec} s` : `${sec.toFixed(1)} s`;
+    }
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+    }
+
+    const metricDefs = [
+      ['inhale', 'Inhale', DURATION_STEP],
+      ['holdIn', 'Hold after inhale', DURATION_STEP],
+      ['exhale', 'Exhale', DURATION_STEP],
+      ['holdOut', 'Hold after exhale', DURATION_STEP],
+      ['cycles', 'Cycles', 1],
+      ['finalHold', 'Final hold', DURATION_STEP]
+    ];
+
+    function renderEditor() {
+      els.restOutput.textContent = formatSeconds(state.rest);
+      els.soundMode.value = state.sound;
+      els.practiceCount.textContent = `${state.practices.length} practice${state.practices.length === 1 ? '' : 's'}`;
+      els.totalTime.textContent = formatClock(totalSeconds());
+      els.startRoutine.disabled = state.practices.length === 0 || totalSeconds() <= 0;
+
+      els.practiceList.innerHTML = state.practices.map((p, index) => {
+        const metrics = metricDefs.map(([key, label, step]) => {
+          const value = p[key];
+          const shown = key === 'cycles' ? String(value) : formatSeconds(value);
+          return `
+            <div class="metric">
+              <div class="metric-name">${label}</div>
+              <div class="stepper" data-stepper data-index="${index}" data-key="${key}" data-step="${step}">
+                <button type="button" data-dir="-1" aria-label="Decrease ${label}">−</button>
+                <output>${shown}</output>
+                <button type="button" data-dir="1" aria-label="Increase ${label}">+</button>
+              </div>
+            </div>`;
+        }).join('');
+        return `
+          <article class="practice-card" data-card-index="${index}">
+            <div class="practice-top">
+              <input class="practice-name" type="text" value="${escapeHTML(p.name)}" maxlength="60" data-name-index="${index}" aria-label="Practice name" />
+              <div class="practice-actions">
+                <button class="btn icon" type="button" data-action="up" data-index="${index}" aria-label="Move ${escapeHTML(p.name)} up" ${index === 0 ? 'disabled' : ''}>↑</button>
+                <button class="btn icon" type="button" data-action="down" data-index="${index}" aria-label="Move ${escapeHTML(p.name)} down" ${index === state.practices.length - 1 ? 'disabled' : ''}>↓</button>
+              </div>
+            </div>
+            <div class="metrics">${metrics}</div>
+            <label class="toggle-row">
+              <span>Alternate nostrils each cycle</span>
+              <span class="switch">
+                <input type="checkbox" data-alternate-index="${index}" ${p.alternate ? 'checked' : ''} />
+                <i aria-hidden="true"></i>
+              </span>
+            </label>
+            <div class="card-foot">
+              <div class="card-time">Practice time <strong>${formatClock(practiceSeconds(p))}</strong></div>
+              <button class="btn ghost danger" type="button" data-action="remove" data-index="${index}">Remove</button>
+            </div>
+          </article>`;
+      }).join('');
+    }
+
+    function commit() {
+      saveState();
+      renderEditor();
+    }
+
+    document.querySelector('[data-global-stepper="rest"]').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-dir]');
+      if (!btn) return;
+      const dir = Number(btn.dataset.dir);
+      state.rest = snap(clampNumber(state.rest + dir * DURATION_STEP, 0, 300, 0), DURATION_STEP);
+      commit();
+    });
+
+    els.soundMode.addEventListener('change', () => {
+      state.sound = els.soundMode.value;
+      saveState();
+    });
+
+    els.practiceList.addEventListener('click', (e) => {
+      const stepBtn = e.target.closest('[data-stepper] button[data-dir]');
+      if (stepBtn) {
+        const stepper = stepBtn.closest('[data-stepper]');
+        const index = Number(stepper.dataset.index);
+        const key = stepper.dataset.key;
+        const step = Number(stepper.dataset.step);
+        const dir = Number(stepBtn.dataset.dir);
+        const p = state.practices[index];
+        const max = key === 'cycles' ? 999 : (key === 'finalHold' ? 600 : 300);
+        const min = key === 'cycles' ? 1 : 0;
+        p[key] = key === 'cycles'
+          ? Math.round(clampNumber(p[key] + dir * step, min, max, min))
+          : snap(clampNumber(p[key] + dir * step, min, max, min), step);
+        commit();
+        return;
+      }
+
+      const action = e.target.closest('button[data-action]');
+      if (!action) return;
+      const index = Number(action.dataset.index);
+      if (action.dataset.action === 'remove') {
+        state.practices.splice(index, 1);
+      } else if (action.dataset.action === 'up' && index > 0) {
+        [state.practices[index - 1], state.practices[index]] = [state.practices[index], state.practices[index - 1]];
+      } else if (action.dataset.action === 'down' && index < state.practices.length - 1) {
+        [state.practices[index + 1], state.practices[index]] = [state.practices[index], state.practices[index + 1]];
+      }
+      commit();
+    });
+
+    els.practiceList.addEventListener('change', (e) => {
+      if (e.target.matches('[data-alternate-index]')) {
+        const index = Number(e.target.dataset.alternateIndex);
+        state.practices[index].alternate = e.target.checked;
+        saveState();
+      }
+    });
+
+    els.practiceList.addEventListener('input', (e) => {
+      if (e.target.matches('[data-name-index]')) {
+        const index = Number(e.target.dataset.nameIndex);
+        state.practices[index].name = e.target.value.slice(0, 60);
+        saveState();
+      }
+    });
+
+    els.practiceList.addEventListener('blur', (e) => {
+      if (e.target.matches('[data-name-index]')) {
+        const index = Number(e.target.dataset.nameIndex);
+        if (!state.practices[index].name.trim()) state.practices[index].name = 'Practice';
+        commit();
+      }
+    }, true);
+
+    els.addPractice.addEventListener('click', () => {
+      state.practices.push({ name: 'New practice', inhale: 4, holdIn: 0, exhale: 4, holdOut: 0, cycles: 5, finalHold: 0, alternate: false });
+      commit();
+      requestAnimationFrame(() => {
+        const input = els.practiceList.querySelector(`[data-name-index="${state.practices.length - 1}"]`);
+        input?.focus();
+        input?.select();
+      });
+    });
+
+    function buildSequence() {
+      const seq = [];
+      state.practices.forEach((p, practiceIndex) => {
+        for (let cycle = 1; cycle <= p.cycles; cycle++) {
+          const nostril = p.alternate ? (cycle % 2 === 1 ? ['left', 'right'] : ['right', 'left']) : [null, null];
+          if (p.inhale > 0) seq.push({ type: 'inhale', duration: p.inhale, practiceIndex, cycle, inhaleSide: nostril[0] });
+          if (p.holdIn > 0) seq.push({ type: 'holdIn', duration: p.holdIn, practiceIndex, cycle });
+          if (p.exhale > 0) seq.push({ type: 'exhale', duration: p.exhale, practiceIndex, cycle, exhaleSide: nostril[1] });
+          if (p.holdOut > 0) seq.push({ type: 'holdOut', duration: p.holdOut, practiceIndex, cycle });
+        }
+        if (p.finalHold > 0) seq.push({ type: 'finalHold', duration: p.finalHold, practiceIndex, cycle: p.cycles });
+        if (practiceIndex < state.practices.length - 1 && state.rest > 0) {
+          seq.push({ type: 'rest', duration: state.rest, practiceIndex, nextPracticeIndex: practiceIndex + 1, cycle: p.cycles });
+        }
+      });
+      return seq;
+    }
+
+    const audio = {
+      ctx: null,
+      active: [],
+      ensure() {
+        if (this.ctx) {
+          if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+          return this.ctx;
+        }
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return null;
+        try {
+          this.ctx = new AC();
+          return this.ctx;
+        } catch (err) {
+          console.warn('Web Audio unavailable.', err);
+          return null;
+        }
+      },
+      stop() {
+        const ctx = this.ctx;
+        if (!ctx) return;
+        const now = ctx.currentTime;
+        this.active.forEach(item => {
+          try {
+            if (item.gain) {
+              item.gain.gain.cancelScheduledValues(now);
+              item.gain.gain.setValueAtTime(Math.max(.0001, item.gain.gain.value || .0001), now);
+              item.gain.gain.exponentialRampToValueAtTime(.0001, now + .08);
+            }
+            item.osc?.stop(now + .1);
+          } catch (_) {}
+        });
+        this.active = [];
+      },
+      tone(phase, elapsed = 0) {
+        const ctx = this.ensure();
+        if (!ctx) return;
+        this.stop();
+        const remaining = Math.max(.05, phase.duration - elapsed);
+        const progress = Math.min(1, Math.max(0, elapsed / Math.max(.001, phase.duration)));
+        const now = ctx.currentTime;
+        const master = ctx.createGain();
+        master.gain.setValueAtTime(.0001, now);
+        master.gain.exponentialRampToValueAtTime(.055, now + .12);
+        master.gain.setValueAtTime(.055, Math.max(now + .12, now + remaining - .14));
+        master.gain.exponentialRampToValueAtTime(.0001, now + remaining);
+        master.connect(ctx.destination);
+
+        let startHz = 174, endHz = 174;
+        if (phase.type === 'inhale') { startHz = 180 + 90 * progress; endHz = 270; }
+        else if (phase.type === 'exhale') { startHz = 270 - 90 * progress; endHz = 180; }
+        else if (phase.type === 'rest') { startHz = endHz = 110; }
+        else if (phase.type === 'finalHold') { startHz = endHz = 138; }
+        else { startHz = endHz = 146; }
+
+        const osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(startHz, now);
+        osc.frequency.exponentialRampToValueAtTime(Math.max(1, endHz), now + remaining);
+        osc.connect(master);
+
+        const harmonicGain = ctx.createGain();
+        harmonicGain.gain.value = .16;
+        const harmonic = ctx.createOscillator();
+        harmonic.type = 'sine';
+        harmonic.frequency.setValueAtTime(startHz * 2, now);
+        harmonic.frequency.exponentialRampToValueAtTime(Math.max(2, endHz * 2), now + remaining);
+        harmonic.connect(harmonicGain).connect(master);
+
+        osc.start(now);
+        harmonic.start(now);
+        osc.stop(now + remaining + .02);
+        harmonic.stop(now + remaining + .02);
+        this.active = [{osc, gain: master}, {osc: harmonic, gain: harmonicGain}];
+      },
+      chime(phase) {
+        if (phase.duration < 1.2) return;
+        const ctx = this.ensure();
+        if (!ctx) return;
+        this.stop();
+        const now = ctx.currentTime;
+        const base = phase.type === 'rest' ? 220 : (phase.type.includes('hold') || phase.type === 'finalHold' ? 293.66 : 392);
+        [1, 2.01, 3.98].forEach((ratio, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = base * ratio;
+          const peak = i === 0 ? .07 : .026 / (i + .3);
+          gain.gain.setValueAtTime(.0001, now);
+          gain.gain.exponentialRampToValueAtTime(peak, now + .018);
+          gain.gain.exponentialRampToValueAtTime(.0001, now + 1.45 + i * .16);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 1.7 + i * .18);
+          this.active.push({osc, gain});
+        });
+      }
+    };
+
+    let wakeLock = null;
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator) || wakeLock) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+      } catch (err) {
+        console.info('Wake Lock unavailable.', err);
+      }
+    }
+    async function releaseWakeLock() {
+      try { await wakeLock?.release(); } catch (_) {}
+      wakeLock = null;
+    }
+
+    const player = {
+      sequence: [],
+      index: 0,
+      phaseStart: 0,
+      paused: false,
+      pausedElapsed: 0,
+      raf: 0,
+      startedAt: 0
+    };
+
+    function currentPhase() { return player.sequence[player.index]; }
+
+    function phaseLabel(phase) {
+      if (phase.type === 'inhale') return phase.inhaleSide ? `Inhale ${phase.inhaleSide}` : 'Inhale';
+      if (phase.type === 'exhale') return phase.exhaleSide ? `Exhale ${phase.exhaleSide}` : 'Exhale';
+      if (phase.type === 'finalHold') return 'Final hold';
+      if (phase.type === 'rest') return 'Rest';
+      return 'Hold';
+    }
+
+    function vibratePhase() {
+      try { navigator.vibrate?.(28); } catch (_) {}
+    }
+
+    function startPhaseFeedback(phase, elapsed = 0, isResume = false) {
+      audio.stop();
+      if (!isResume) vibratePhase();
+      if (state.sound === 'tones') audio.tone(phase, elapsed);
+      else if (state.sound === 'chimes' && !isResume) audio.chime(phase);
+    }
+
+    function activateCurrent(elapsed = 0, isResume = false) {
+      const phase = currentPhase();
+      if (!phase) return;
+      const p = state.practices[phase.practiceIndex];
+      els.phaseLabel.textContent = phaseLabel(phase);
+      if (phase.type === 'rest') {
+        els.practiceProgress.textContent = `Rest after ${p?.name || 'practice'}`;
+        const next = state.practices[phase.nextPracticeIndex];
+        els.nextPractice.textContent = next ? `Next: ${next.name}` : '';
+        els.cycleProgress.textContent = '';
+      } else {
+        els.practiceProgress.textContent = `Practice ${phase.practiceIndex + 1}/${state.practices.length} • ${p.name}`;
+        els.nextPractice.textContent = '';
+        els.cycleProgress.textContent = phase.type === 'finalHold' ? 'Final hold' : `Cycle ${phase.cycle}/${p.cycles}`;
+      }
+      startPhaseFeedback(phase, elapsed, isResume);
+      updateVisuals(elapsed);
+    }
+
+    function orbScale(phase, progress) {
+      const small = .74, large = 1.18;
+      if (phase.type === 'inhale') return small + (large - small) * progress;
+      if (phase.type === 'exhale') return large - (large - small) * progress;
+      if (phase.type === 'holdIn') return large;
+      if (phase.type === 'holdOut') return small;
+      if (phase.type === 'finalHold') return .96;
+      return .8;
+    }
+
+    function updateVisuals(elapsed) {
+      const phase = currentPhase();
+      if (!phase) return;
+      const remaining = Math.max(0, phase.duration - elapsed);
+      const progress = Math.min(1, Math.max(0, elapsed / Math.max(.001, phase.duration)));
+      els.countdown.textContent = remaining >= 10 ? String(Math.ceil(remaining)) : remaining.toFixed(1);
+      els.orbWrap.style.setProperty('--orb-scale', orbScale(phase, progress).toFixed(3));
+    }
+
+    function completeRoutine() {
+      cancelAnimationFrame(player.raf);
+      audio.stop();
+      releaseWakeLock();
+      els.playerScreen.classList.remove('active');
+      els.playerScreen.setAttribute('aria-hidden', 'true');
+      els.completionScreen.classList.add('active');
+      els.completionScreen.setAttribute('aria-hidden', 'false');
+      els.completionSummary.textContent = `${state.practices.length} practice${state.practices.length === 1 ? '' : 's'} • ${formatClock(totalSeconds())}`;
+    }
+
+    function tick(now) {
+      if (player.paused) return;
+      let phase = currentPhase();
+      if (!phase) { completeRoutine(); return; }
+
+      let elapsed = (now - player.phaseStart) / 1000;
+      let changed = false;
+      while (phase && elapsed >= phase.duration) {
+        player.phaseStart += phase.duration * 1000;
+        player.index += 1;
+        changed = true;
+        phase = currentPhase();
+        if (phase) elapsed = (now - player.phaseStart) / 1000;
+      }
+
+      if (!phase) { completeRoutine(); return; }
+      if (changed) activateCurrent(elapsed, false);
+      else updateVisuals(elapsed);
+      player.raf = requestAnimationFrame(tick);
+    }
+
+    function startRoutine() {
+      player.sequence = buildSequence();
+      if (!player.sequence.length) return;
+      player.index = 0;
+      player.paused = false;
+      player.pausedElapsed = 0;
+      player.startedAt = performance.now();
+      player.phaseStart = player.startedAt;
+      els.pauseResume.textContent = 'Pause';
+      els.completionScreen.classList.remove('active');
+      els.completionScreen.setAttribute('aria-hidden', 'true');
+      els.playerScreen.classList.add('active');
+      els.playerScreen.setAttribute('aria-hidden', 'false');
+      requestWakeLock();
+      audio.ensure();
+      activateCurrent(0, false);
+      cancelAnimationFrame(player.raf);
+      player.raf = requestAnimationFrame(tick);
+    }
+
+    function togglePause() {
+      const now = performance.now();
+      if (!player.paused) {
+        player.paused = true;
+        player.pausedElapsed = (now - player.phaseStart) / 1000;
+        cancelAnimationFrame(player.raf);
+        audio.stop();
+        releaseWakeLock();
+        els.pauseResume.textContent = 'Resume';
+      } else {
+        player.paused = false;
+        player.phaseStart = performance.now() - player.pausedElapsed * 1000;
+        els.pauseResume.textContent = 'Pause';
+        requestWakeLock();
+        activateCurrent(player.pausedElapsed, true);
+        player.raf = requestAnimationFrame(tick);
+      }
+    }
+
+    function jumpToIndex(index) {
+      audio.stop();
+      player.index = index;
+      if (player.index >= player.sequence.length) { completeRoutine(); return; }
+      player.phaseStart = performance.now();
+      player.pausedElapsed = 0;
+      player.paused = false;
+      els.pauseResume.textContent = 'Pause';
+      requestWakeLock();
+      activateCurrent(0, false);
+      cancelAnimationFrame(player.raf);
+      player.raf = requestAnimationFrame(tick);
+    }
+
+    function skipPractice() {
+      const phase = currentPhase();
+      if (!phase) return;
+      if (phase.type === 'rest') {
+        jumpToIndex(player.index + 1);
+        return;
+      }
+      const currentPractice = phase.practiceIndex;
+      let target = player.index + 1;
+      while (target < player.sequence.length) {
+        const candidate = player.sequence[target];
+        if ((candidate.type === 'rest' && candidate.practiceIndex === currentPractice) || candidate.practiceIndex > currentPractice) break;
+        target++;
+      }
+      jumpToIndex(target);
+    }
+
+    function endRoutine(showCompletion = false) {
+      cancelAnimationFrame(player.raf);
+      audio.stop();
+      releaseWakeLock();
+      player.paused = false;
+      els.playerScreen.classList.remove('active');
+      els.playerScreen.setAttribute('aria-hidden', 'true');
+      if (showCompletion) completeRoutine();
+    }
+
+    els.startRoutine.addEventListener('click', startRoutine);
+    els.pauseResume.addEventListener('click', togglePause);
+    els.skipPractice.addEventListener('click', skipPractice);
+    els.endRoutine.addEventListener('click', () => endRoutine(false));
+    els.againBtn.addEventListener('click', startRoutine);
+    els.backBtn.addEventListener('click', () => {
+      els.completionScreen.classList.remove('active');
+      els.completionScreen.setAttribute('aria-hidden', 'true');
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && els.playerScreen.classList.contains('active') && !player.paused) {
+        requestWakeLock();
+      }
+    });
+
+    window.addEventListener('beforeunload', () => {
+      audio.stop();
+      releaseWakeLock();
+    });
+
+    renderEditor();
+
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.warn('Service worker registration failed.', err));
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
